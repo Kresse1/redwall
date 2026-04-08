@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/Kresse1/redwall/internal/image"
 	"github.com/Kresse1/redwall/internal/reddit"
 	"github.com/Kresse1/redwall/internal/wallpaper"
 )
@@ -14,6 +15,15 @@ import (
 func main() {
 	client := reddit.NewClient()
 	kdeSetter := wallpaper.NewKDESetter()
+	screen, err := image.NewScreen()
+	if err != nil {
+		fmt.Println("Eroor:", err)
+		return
+	}
+
+	// Test Screen
+	fmt.Printf("Screen size %dx%d\n", screen.Width, screen.Height)
+
 	posts, err := client.FetchPosts()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -42,13 +52,13 @@ func main() {
 		return
 	}
 	dataFormat := path.Ext(parsedUrl.Path)
-	image, err := client.DownloadImage(downloadUrl)
+	imgBytes, err := client.DownloadImage(downloadUrl)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 	var imagePath = "image" + dataFormat
-	err = os.WriteFile(imagePath, image, 0644)
+	err = os.WriteFile(imagePath, imgBytes, 0644)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
