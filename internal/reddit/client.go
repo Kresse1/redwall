@@ -46,8 +46,30 @@ func (c *Client) FetchPosts() ([]Post, error) {
 
 	var posts []Post
 	for _, child := range redditResponse.Data.Children {
-		posts = append(posts, child.Data)
+		if child.Data.PostHint == "image" && child.Data.Over18 == false {
+			posts = append(posts, child.Data)
+		}
 	}
 	return posts, nil
+
+}
+
+func (c *Client) DownloadImage(url string) ([]byte, error) {
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("User-Agent", c.userAgent)
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status %d downloading %s", response.StatusCode, url)
+	}
+
+	return io.ReadAll(response.Body)
 
 }
