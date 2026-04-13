@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/url"
 	"os"
@@ -58,7 +59,12 @@ func main() {
 		return
 	}
 	var imagePath = "image" + dataFormat
-	err = os.WriteFile(imagePath, imgBytes, 0644)
+	scaledImgBytes, err := image.Scale(screen.Width, screen.Height, bytes.NewReader(imgBytes))
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	err = os.WriteFile(imagePath, scaledImgBytes, 0644)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
