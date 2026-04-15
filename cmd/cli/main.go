@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/Kresse1/redwall/internal/image"
+	"github.com/Kresse1/redwall/internal/imaging"
 	"github.com/Kresse1/redwall/internal/reddit"
 	"github.com/Kresse1/redwall/internal/wallpaper"
 )
@@ -16,9 +16,9 @@ import (
 func main() {
 	client := reddit.NewClient()
 	kdeSetter := wallpaper.NewKDESetter()
-	screen, err := image.NewScreen()
+	screen, err := imaging.NewScreen()
 	if err != nil {
-		fmt.Println("Eroor:", err)
+		fmt.Println("Error:", err)
 		return
 	}
 
@@ -59,7 +59,7 @@ func main() {
 		return
 	}
 	var imagePath = "image" + dataFormat
-	scaledImgBytes, err := image.Scale(screen.Width, screen.Height, bytes.NewReader(imgBytes))
+	scaledImgBytes, err := imaging.Scale(screen.Width, screen.Height, bytes.NewReader(imgBytes))
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
