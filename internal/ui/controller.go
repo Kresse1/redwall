@@ -8,6 +8,7 @@ import (
 	_ "image/png"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -74,18 +75,35 @@ func (c *Controller) LoadPosts() error {
 }
 
 func (c *Controller) DownloadImages() error {
+	var wg sync.WaitGroup
+	errs := make([]error, len(c.posts))
 	c.images = make([][]byte, len(c.posts))
+
 	for i, post := range c.posts {
-		img, err := c.client.DownloadImage(post.URL)
+		wg.Add(1)
+		go func(i int, post reddit.Post) {
+			defer wg.Done()
+			img, err := c.client.DownloadImage(post.URL)
+			if err != nil {
+				errs[i] = err
+				return
+			}
+			c.images[i] = img
+		}(i, post)
+	}
+	wg.Wait()
+	for _, err := range errs {
 		if err != nil {
 			return err
 		}
-		c.images[i] = img
 	}
 	return nil
 }
 
 func (c *Controller) SelectPost(id int) {
+	if c.images[id] == nil {
+		return
+	}
 	c.selectedID = id
 	img, _, err := image.Decode(bytes.NewReader(c.images[id]))
 	if err != nil {

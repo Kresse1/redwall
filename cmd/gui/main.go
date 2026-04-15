@@ -34,10 +34,7 @@ func main() {
 		fmt.Println("Error:", err)
 		return
 	}
-	if err := controller.DownloadImages(); err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
 	w.SetContent(controller.BuildUI())
+	go controller.DownloadImages()
 	w.ShowAndRun()
 }
