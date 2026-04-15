@@ -30,6 +30,7 @@ type Controller struct {
 	preview     *canvas.Image
 	currentSlot bool
 	cacheDir    string
+	decoded     []image.Image
 }
 
 func NewController(
@@ -78,6 +79,7 @@ func (c *Controller) DownloadImages() error {
 	var wg sync.WaitGroup
 	errs := make([]error, len(c.posts))
 	c.images = make([][]byte, len(c.posts))
+	c.decoded = make([]image.Image, len(c.posts))
 
 	for i, post := range c.posts {
 		wg.Add(1)
@@ -89,6 +91,12 @@ func (c *Controller) DownloadImages() error {
 				return
 			}
 			c.images[i] = img
+			decoded, _, err := image.Decode(bytes.NewReader(img))
+			if err != nil {
+				errs[i] = err
+				return
+			}
+			c.decoded[i] = decoded
 		}(i, post)
 	}
 	wg.Wait()
@@ -101,16 +109,10 @@ func (c *Controller) DownloadImages() error {
 }
 
 func (c *Controller) SelectPost(id int) {
-	if c.images[id] == nil {
+	if c.decoded[id] == nil {
 		return
 	}
-	c.selectedID = id
-	img, _, err := image.Decode(bytes.NewReader(c.images[id]))
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	c.preview.Image = img
+	c.preview.Image = c.decoded[id]
 	c.preview.Refresh()
 }
 
