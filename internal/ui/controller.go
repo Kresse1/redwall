@@ -113,6 +113,7 @@ func (c *Controller) SelectPost(id int) {
 		return
 	}
 	c.preview.Image = c.decoded[id]
+	c.selectedID = id
 	c.preview.Refresh()
 }
 
